@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.example.kotlinforecast.view.MainFragment"
+        android:name="com.example.kotlinweatherforecast.view.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_city_weather_data" />
     <fragment
         android:id="@+id/tempFragment"
-        android:name="com.example.kotlinforecast.ui.fragment.MainScreen"
+        android:name="com.example.kotlinweatherforecast.ui.fragment.MainScreen"
         android:label="fragment_temp"
         tools:layout="@layout/fragment_main_screen" >
         <action
