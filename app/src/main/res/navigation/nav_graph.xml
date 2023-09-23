@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/tempFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.kotlinforecast.view.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_city_weather_data" />
+    <fragment
+        android:id="@+id/tempFragment"
+        android:name="com.example.kotlinforecast.ui.fragment.MainScreen"
+        android:label="fragment_temp"
+        tools:layout="@layout/fragment_main_screen" >
+        <action
+            android:id="@+id/action_tempFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
+    </fragment>
+</navigation>
