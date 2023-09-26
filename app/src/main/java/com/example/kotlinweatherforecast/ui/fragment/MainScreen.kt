@@ -22,12 +22,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager.*
 import androidx.viewpager2.widget.ViewPager2
-import com.example.kotlinweatherforecast.common.OnHymnClickListener
 import com.example.kotlinweatherforecast.R
+import com.example.kotlinweatherforecast.databinding.FragmentMainScreenBinding
+import com.example.kotlinweatherforecast.common.OnHymnClickListener
 import com.example.kotlinweatherforecast.ui.adapter.CitiesRecyclerViewAdapter
 import com.example.kotlinweatherforecast.ui.adapter.TempeturesRecyclerViewAdapter
 import com.example.kotlinweatherforecast.common.onCliclLongRecyclerView
-import com.example.kotlinweatherforecast.databinding.FragmentMainScreenBinding
 import com.google.android.material.snackbar.Snackbar
 import org.json.JSONObject
 import java.io.InputStream

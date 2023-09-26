@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.kotlinweatherforecast.databinding.RowLayoutBinding
 
 import com.example.kotlinweatherforecast.common.onCliclLongRecyclerView
+import com.example.kotlinweatherforecast.databinding.RowLayoutBinding
 
 
 class TempeturesRecyclerViewAdapter(private var placeName: ArrayList<String>) : RecyclerView.Adapter<TempeturesRecyclerViewAdapter.RowHolder>(){

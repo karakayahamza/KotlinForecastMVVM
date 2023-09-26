@@ -7,19 +7,22 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import android.widget.TextView
+import com.example.kotlinweatherforecast.BuildConfig
 import com.example.kotlinweatherforecast.R
-import com.example.kotlinweatherforecast.databinding.FragmentCityWeatherDataBinding
 import com.example.kotlinweatherforecast.data.model.WeatherModel
+import com.example.kotlinweatherforecast.databinding.FragmentCityWeatherDataBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import com.example.kotlinweatherforecast.ui.viewmodel.WeatherViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlin.math.roundToInt
 
+@Suppress("DEPRECATION")
 class CityWeatherData : Fragment() {
     private var _binding: FragmentCityWeatherDataBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: WeatherViewModel
+    val API_KEY  = BuildConfig.API_KEY
     companion object {
         fun newInstance(cityName: String?): CityWeatherData {
             val fragment = CityWeatherData()
@@ -46,7 +49,7 @@ class CityWeatherData : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProviders.of(this)[WeatherViewModel::class.java]
         arguments?.getString("cityName")
-            ?.let { viewModel.loadData(it, "61e8b0259c092b1b9a15474cd800ee25") }
+            ?.let { viewModel.loadData(it, API_KEY) }
         observeLiveData()
     }
 
@@ -67,6 +70,7 @@ class CityWeatherData : Fragment() {
         binding.textPressure.text = weather.weatherList[0].main?.pressure.toString() + "hPa"
         binding.textWind.text = ((weather.weatherList[0].wind?.speed)?.times(3.6)?.roundToInt()).toString() +"km/h"
         uploadWeatherIcon(0, weather.weatherList[0].weather!![0].icon.toString())
+
     }
 
     @SuppressLint("SimpleDateFormat", "SetTextI18n")

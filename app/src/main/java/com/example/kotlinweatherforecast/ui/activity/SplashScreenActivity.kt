@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.kotlinweatherforecast.R
 import com.example.kotlinweatherforecast.databinding.ActivitySplashScreenBinding
 
+
 @SuppressLint("CustomSplashScreen")
 class SplashScreenActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySplashScreenBinding

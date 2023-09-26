@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.kotlinweatherforecast.databinding.CitiesanddistrictsRowLayoutBinding
 import com.example.kotlinweatherforecast.common.OnHymnClickListener
+import com.example.kotlinweatherforecast.databinding.CitiesanddistrictsRowLayoutBinding
 
 class CitiesRecyclerViewAdapter(private var places:ArrayList<String>) : RecyclerView.Adapter<CitiesRecyclerViewAdapter.RowHolder>() {
     private var listener: OnHymnClickListener? = null
