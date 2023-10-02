@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1022662685771",
+    "project_id": "kotlinweatherforecestandroid",
+    "storage_bucket": "kotlinweatherforecestandroid.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022662685771:android:bfaad167ad472ccdbfc9ce",
+        "android_client_info": {
+          "package_name": "com.example.kotlinweatherforecast"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk5ld5qPMaR1oqMrB3Sefk5Ldi0FZ16jw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
