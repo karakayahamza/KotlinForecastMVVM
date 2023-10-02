@@ -82,4 +82,15 @@ class InternetConnectivity : Application() {
         android.os.Process.killProcess(android.os.Process.myPid())
         exitProcess(1)
     }
+
+    fun checkAndShowInitialInternetStatus() {
+        if (!isInternetConnected()) {
+            showAlertDialog()
+        }
+    }
+
+    private fun isInternetConnected(): Boolean {
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
 }

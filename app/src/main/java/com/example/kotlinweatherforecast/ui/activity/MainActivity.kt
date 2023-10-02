@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
 
         val internetConnectivity = application as InternetConnectivity
         internetConnectivity.initContext(this)
+        internetConnectivity.checkAndShowInitialInternetStatus()
         internetConnectivity.startMonitoringConnectivity()
     }
 }
