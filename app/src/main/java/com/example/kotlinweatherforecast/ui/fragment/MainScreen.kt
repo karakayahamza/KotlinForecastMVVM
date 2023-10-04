@@ -1,9 +1,11 @@
 package com.example.kotlinweatherforecast.ui.fragment
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -17,17 +19,21 @@ import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 import com.example.kotlinweatherforecast.anim.ZoomOutPageTransformer
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager.*
 import androidx.viewpager2.widget.ViewPager2
 import com.example.kotlinweatherforecast.R
 import com.example.kotlinweatherforecast.databinding.FragmentMainScreenBinding
-import com.example.kotlinweatherforecast.common.OnHymnClickListener
+import com.example.kotlinweatherforecast.utils.OnHymnClickListener
 import com.example.kotlinweatherforecast.ui.adapter.CitiesRecyclerViewAdapter
 import com.example.kotlinweatherforecast.ui.adapter.TempeturesRecyclerViewAdapter
-import com.example.kotlinweatherforecast.common.onCliclLongRecyclerView
+import com.example.kotlinweatherforecast.utils.LocationHelper
+import com.example.kotlinweatherforecast.utils.onCliclLongRecyclerView
 import com.google.android.material.snackbar.Snackbar
 import org.json.JSONObject
 import java.io.InputStream
@@ -66,6 +72,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     @SuppressLint("CommitPrefEdits", "CutPasteId", "ResourceAsColor")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         initViews()
         setupViewPager()
         setupSearchView()
@@ -76,8 +83,8 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     private fun initViews() {
         mCustomPagerAdapter = ViewPagerAdapter(parentFragmentManager, fragmentTagArg)
         binding.pager.adapter = mCustomPagerAdapter
+        binding.pager.offscreenPageLimit = 3
         binding.pager.setPageTransformer(true, ZoomOutPageTransformer())
-        binding.pager.offscreenPageLimit = 5
 
         val layoutManager = LinearLayoutManager(requireContext())
         val layoutManager2 = LinearLayoutManager(requireContext())
@@ -152,6 +159,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
 
         recyclerViewAdapter2 = CitiesRecyclerViewAdapter(place)
         recyclerViewAdapter2!!.setListener(this)
+
         binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.filtered_place_recyclerview).adapter = recyclerViewAdapter2
     }
 
@@ -184,15 +192,21 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     }
 
     private fun addCity(cityName: String) {
-        mCustomPagerAdapter.addPage(CityWeatherData.newInstance(cityName))
-        binding.pager.currentItem = mCustomPagerAdapter.count
-        arrayList.add(cityName)
 
-        val gson = Gson()
-        val json = gson.toJson(arrayList)
-        sharedPreferences?.edit()?.putString("TAG", json)?.apply()
+        if (arrayList.size>5){
+            Toast.makeText(requireContext(),"Çok fazla şehir eklediniz. Lütfen şehir silip tekrar edeneyiniz.",Toast.LENGTH_SHORT).show()
+        }
+        else{
+            mCustomPagerAdapter.addPage(CityWeatherData.newInstance(cityName))
+            binding.pager.currentItem = mCustomPagerAdapter.count
+            arrayList.add(cityName)
 
-        updateRecyclerViewAdapter()
+            val gson = Gson()
+            val json = gson.toJson(arrayList)
+            sharedPreferences?.edit()?.putString("TAG", json)?.apply()
+
+            updateRecyclerViewAdapter()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -213,24 +227,42 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         val gson1 = Gson()
         val json1 = sharedPreferences?.getString("TAG", "")
         val type: Type = object : TypeToken<List<String?>?>() {}.type
-        if (json1 != "") {
-            arrayList.addAll(gson1.fromJson(json1, type))
-            for (a in arrayList) {
-                mCustomPagerAdapter.addPage(CityWeatherData.newInstance(a))
+
+
+        val currentCityNameLiveData = MutableLiveData<String>()
+
+        getCityName { currentCityName ->
+            currentCityNameLiveData.postValue(currentCityName)
+        }
+
+        currentCityNameLiveData.observe(viewLifecycleOwner) { currentCityName ->
+            if (currentCityName != null) {
+                mCustomPagerAdapter.addPage(CityWeatherData.newInstance(currentCityName))
                 binding.pager.currentItem = 0
                 mCustomPagerAdapter.notifyDataSetChanged()
+            } else {
+                println("Konum alınamadı.")
             }
+
+            if (json1 != "") {
+                arrayList.addAll(gson1.fromJson(json1, type))
+                for (a in arrayList) {
+                    mCustomPagerAdapter.addPage(CityWeatherData.newInstance(a))
+                    binding.pager.currentItem = 0
+                    mCustomPagerAdapter.notifyDataSetChanged()
+                }
+            }
+
+            recyclerViewAdapter1 = TempeturesRecyclerViewAdapter(arrayList)
+            recyclerViewAdapter1!!.setListener(this)
+            binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = recyclerViewAdapter1
+            recyclerViewAdapter1!!.notifyDataSetChanged()
         }
-        recyclerViewAdapter1 = TempeturesRecyclerViewAdapter(arrayList)
-        recyclerViewAdapter1!!.setListener(this)
-        binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = recyclerViewAdapter1
-        recyclerViewAdapter1!!.notifyDataSetChanged()
     }
 
     private fun hideNavDrawer(){
         binding.myDrawerLayout.closeDrawer(GravityCompat.START)
     }
-
 
     override fun onLongClick(currentPage: Int?) {
         if (currentPage != null) {
@@ -302,6 +334,26 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         }
         if (filterers.isNotEmpty()) {
             recyclerViewAdapter2?.filterList(filterers)
+        }
+    }
+
+    private fun getCityName(callback: (String?) -> Unit) {
+        val locationHelper = LocationHelper(requireActivity())
+
+        if (ContextCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                1
+            )
+        } else {
+            locationHelper.getLastLocationWithPermission { _, cityName ->
+                callback(cityName)
+            }
         }
     }
 }

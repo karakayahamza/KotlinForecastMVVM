@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-import com.example.kotlinweatherforecast.common.onCliclLongRecyclerView
+import com.example.kotlinweatherforecast.utils.onCliclLongRecyclerView
 import com.example.kotlinweatherforecast.databinding.RowLayoutBinding
 
 

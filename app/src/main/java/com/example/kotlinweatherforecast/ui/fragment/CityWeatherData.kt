@@ -17,7 +17,6 @@ import com.example.kotlinweatherforecast.ui.viewmodel.WeatherViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlin.math.roundToInt
 
-@Suppress("DEPRECATION")
 class CityWeatherData : Fragment() {
     private var _binding: FragmentCityWeatherDataBinding? = null
     private val binding get() = _binding!!
@@ -25,6 +24,13 @@ class CityWeatherData : Fragment() {
     val API_KEY  = BuildConfig.API_KEY
     companion object {
         fun newInstance(cityName: String?): CityWeatherData {
+            val fragment = CityWeatherData()
+            val args = Bundle()
+            args.putString("cityName", cityName)
+            fragment.arguments = args
+            return fragment
+        }
+        fun newInstance(cityName: String?,isCurrentPlace:Boolean): CityWeatherData {
             val fragment = CityWeatherData()
             val args = Bundle()
             args.putString("cityName", cityName)
@@ -61,6 +67,7 @@ class CityWeatherData : Fragment() {
         val convertedTime = weather.weatherList[0].dt_txt
         val time: Date = inputDateFormat.parse(convertedTime.toString()) ?: Date()
         val formattedTime = outputDateFormat.format(time)
+
 
         binding.textDay.text = formattedTime
         binding.cityName.text =  weather.city.name.toString().replace(Regex(" Province$"), "")

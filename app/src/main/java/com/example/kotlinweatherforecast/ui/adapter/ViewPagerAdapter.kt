@@ -16,6 +16,7 @@ class ViewPagerAdapter(fragmentManager: FragmentManager, FRAGMENT_TAG_ARG: Strin
     private var fragmentTagArg : String? = FRAGMENT_TAG_ARG
 
 
+
     override fun instantiateItem(container: ViewGroup, position: Int): Any {
         if (currentTransaction == null) {
             currentTransaction = fragmentManager!!.beginTransaction()
