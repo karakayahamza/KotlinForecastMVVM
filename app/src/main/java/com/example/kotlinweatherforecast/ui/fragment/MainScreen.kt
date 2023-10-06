@@ -1,5 +1,6 @@
 package com.example.kotlinweatherforecast.ui.fragment
 
+import LocationHelper
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -8,37 +9,36 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.AssetManager
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.kotlinweatherforecast.ui.adapter.ViewPagerAdapter
 import android.widget.*
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
-import com.example.kotlinweatherforecast.anim.ZoomOutPageTransformer
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.lifecycle.MutableLiveData
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager.*
 import androidx.viewpager2.widget.ViewPager2
 import com.example.kotlinweatherforecast.R
+import com.example.kotlinweatherforecast.anim.ZoomOutPageTransformer
 import com.example.kotlinweatherforecast.databinding.FragmentMainScreenBinding
-import com.example.kotlinweatherforecast.utils.OnHymnClickListener
 import com.example.kotlinweatherforecast.ui.adapter.CitiesRecyclerViewAdapter
 import com.example.kotlinweatherforecast.ui.adapter.TempeturesRecyclerViewAdapter
-import com.example.kotlinweatherforecast.utils.LocationHelper
+import com.example.kotlinweatherforecast.ui.adapter.ViewPagerAdapter
+import com.example.kotlinweatherforecast.utils.OnHymnClickListener
 import com.example.kotlinweatherforecast.utils.onCliclLongRecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
 import java.io.InputStream
+import java.lang.reflect.Type
 import java.util.Locale
-import kotlin.collections.ArrayList
 
 @Suppress("DEPRECATION")
 class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
@@ -53,6 +53,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     private var recyclerViewAdapter1 : TempeturesRecyclerViewAdapter? = null
     private var recyclerViewAdapter2 : CitiesRecyclerViewAdapter? = null
     private var sharedPreferences : SharedPreferences? = null
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,8 +73,9 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     @SuppressLint("CommitPrefEdits", "CutPasteId", "ResourceAsColor")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         initViews()
+        registerLauncher()
+        lacationPermission()
         setupViewPager()
         setupSearchView()
         setupToggle()
@@ -228,22 +230,6 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         val json1 = sharedPreferences?.getString("TAG", "")
         val type: Type = object : TypeToken<List<String?>?>() {}.type
 
-
-        val currentCityNameLiveData = MutableLiveData<String>()
-
-        getCityName { currentCityName ->
-            currentCityNameLiveData.postValue(currentCityName)
-        }
-
-        currentCityNameLiveData.observe(viewLifecycleOwner) { currentCityName ->
-            if (currentCityName != null) {
-                mCustomPagerAdapter.addPage(CityWeatherData.newInstance(currentCityName))
-                binding.pager.currentItem = 0
-                mCustomPagerAdapter.notifyDataSetChanged()
-            } else {
-                println("Konum alınamadı.")
-            }
-
             if (json1 != "") {
                 arrayList.addAll(gson1.fromJson(json1, type))
                 for (a in arrayList) {
@@ -257,7 +243,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
             recyclerViewAdapter1!!.setListener(this)
             binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = recyclerViewAdapter1
             recyclerViewAdapter1!!.notifyDataSetChanged()
-        }
+
     }
 
     private fun hideNavDrawer(){
@@ -337,9 +323,8 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         }
     }
 
-    private fun getCityName(callback: (String?) -> Unit) {
+    private fun loadCurrentLocation(callback: (String?) -> Unit) {
         val locationHelper = LocationHelper(requireActivity())
-
         if (ContextCompat.checkSelfPermission(
                 requireActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -353,6 +338,43 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         } else {
             locationHelper.getLastLocationWithPermission { _, cityName ->
                 callback(cityName)
+            }
+        }
+    }
+
+    private fun lacationPermission() {
+       if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.ACCESS_FINE_LOCATION)){
+
+            Snackbar.make(binding.root,"Lokasyon bilgisini almak için izniniz gerekli",Snackbar.LENGTH_INDEFINITE).setAction("İzin ver"){
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }.show()
+        }
+           else{
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+       }
+        else{
+           println("İzin var")
+       }
+    }
+
+
+    private fun registerLauncher(){
+        permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){result ->
+            if (result){
+             if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                 loadCurrentLocation { currentCityName ->
+                     mCustomPagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
+                 }.let {
+                     mCustomPagerAdapter.notifyDataSetChanged()
+                     binding.pager.setCurrentItem(0,false)
+                 }
+             } }
+            else{
+                Toast.makeText(requireContext(),"İzin verilmedi",Toast.LENGTH_SHORT).show()
             }
         }
     }

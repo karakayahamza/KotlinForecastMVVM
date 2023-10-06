@@ -1,17 +1,15 @@
-package com.example.kotlinweatherforecast.utils
-
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
-import android.location.Location
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import java.io.IOException
 import java.util.Locale
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
 
 class LocationHelper(private val activity: Activity) {
 
@@ -67,9 +65,9 @@ class LocationHelper(private val activity: Activity) {
                     } catch (e: IOException) {
                         e.printStackTrace()
                         onLocationReceived(location, null)
-                        println(e)
                     }
                 }
             }
     }
+
 }

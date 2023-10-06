@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.kotlinweatherforecast.databinding.ActivityMainBinding
 import com.example.kotlinweatherforecast.network.InternetConnectivity
-import com.example.kotlinweatherforecast.utils.LocationHelper
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding

@@ -96,6 +96,13 @@ class ViewPagerAdapter(fragmentManager: FragmentManager, FRAGMENT_TAG_ARG: Strin
         notifyDataSetChanged()
     }
 
+    fun addPageFirstPlace(fragment: Fragment?, position: Int) {
+        if (fragment != null && position >= 0 && position <= pages.size) {
+            pages.add(position, fragment)
+            notifyDataSetChanged()
+        }
+    }
+
     fun removePage(position: Int) {
         fragmentsPosition.clear()
         var pageFragment: Fragment = pages[position]
