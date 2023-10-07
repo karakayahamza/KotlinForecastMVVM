@@ -69,5 +69,4 @@ class LocationHelper(private val activity: Activity) {
                 }
             }
     }
-
 }

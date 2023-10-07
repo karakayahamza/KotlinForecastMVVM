@@ -5,14 +5,14 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-import com.example.kotlinweatherforecast.utils.onCliclLongRecyclerView
+import com.example.kotlinweatherforecast.utils.OnCliclLongRecyclerView
 import com.example.kotlinweatherforecast.databinding.RowLayoutBinding
 
 
 class TempeturesRecyclerViewAdapter(private var placeName: ArrayList<String>) : RecyclerView.Adapter<TempeturesRecyclerViewAdapter.RowHolder>(){
-    private var listener: onCliclLongRecyclerView? = null
+    private var listener: OnCliclLongRecyclerView? = null
 
-    fun setListener(listener: onCliclLongRecyclerView){
+    fun setListener(listener: OnCliclLongRecyclerView){
         this.listener = listener
     }
     class RowHolder(val binding: RowLayoutBinding) : RecyclerView.ViewHolder(binding.root)
@@ -31,7 +31,7 @@ class TempeturesRecyclerViewAdapter(private var placeName: ArrayList<String>) : 
 
         holder.binding.name.setOnLongClickListener {
             if (listener != null) {
-                listener!!.onLongClick(position)
+                listener!!.onLongItemClick(position)
             }
             true
         }

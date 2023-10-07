@@ -74,6 +74,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeViews()
+        laodSavedPlaces()
         registerPermissionLauncher()
         requestLocationPermission()
         setupViewPager()
@@ -102,7 +103,6 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
             Context.MODE_PRIVATE
         )
 
-        //getSavedPlaces()
     }
 
     private fun setupViewPager() {
@@ -225,7 +225,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun getSavedPlaces() {
+    private fun laodSavedPlaces() {
         val gson1 = Gson()
         val json1 = sharedPreferences?.getString("TAG", "")
         val type: Type = object : TypeToken<List<String?>?>() {}.type
@@ -283,7 +283,6 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
             }
 
             val alertDialog = alertDialogBuilder.create()
-
             alertDialog.show()
         }
     }
@@ -344,7 +343,6 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
 
     private fun requestLocationPermission() {
        if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-
         if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.ACCESS_FINE_LOCATION)){
 
             Snackbar.make(binding.root,"Lokasyon bilgisini almak için izniniz gerekli",Snackbar.LENGTH_INDEFINITE).setAction("İzin ver"){
@@ -353,12 +351,11 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
         }
            else{
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-
+           }
        }
         else{
-           permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-       }
+           registerPermissionLauncher()
+        }
     }
 
     private fun registerPermissionLauncher(){
@@ -369,12 +366,11 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
                      pagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
                      binding.pager.currentItem = 0
                      pagerAdapter.notifyDataSetChanged()
-                     getSavedPlaces()
                  }
-             } }
+             }
+            }
             else{
                 Toast.makeText(requireContext(),"İzin verilmedi",Toast.LENGTH_SHORT).show()
-                getSavedPlaces()
             }
         }
     }
