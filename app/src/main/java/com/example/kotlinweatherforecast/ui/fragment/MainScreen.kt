@@ -30,8 +30,8 @@ import com.example.kotlinweatherforecast.databinding.FragmentMainScreenBinding
 import com.example.kotlinweatherforecast.ui.adapter.CitiesRecyclerViewAdapter
 import com.example.kotlinweatherforecast.ui.adapter.TempeturesRecyclerViewAdapter
 import com.example.kotlinweatherforecast.ui.adapter.ViewPagerAdapter
-import com.example.kotlinweatherforecast.utils.OnHymnClickListener
-import com.example.kotlinweatherforecast.utils.onCliclLongRecyclerView
+import com.example.kotlinweatherforecast.utils.OnItemClickListener
+import com.example.kotlinweatherforecast.utils.OnCliclLongRecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -41,17 +41,17 @@ import java.lang.reflect.Type
 import java.util.Locale
 
 @Suppress("DEPRECATION")
-class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
+class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
     private var _binding: FragmentMainScreenBinding? = null
     private val binding get() = _binding!!
     private val fragmentTagArg = "tag"
-    private lateinit var mCustomPagerAdapter: ViewPagerAdapter
-    private lateinit var  context: Context
+    private lateinit var pagerAdapter: ViewPagerAdapter
+    private lateinit var  appContext: Context
     private lateinit var  toggle : ActionBarDrawerToggle
-    private var arrayList = arrayListOf<String>()
-    private var place = ArrayList<String>()
-    private var recyclerViewAdapter1 : TempeturesRecyclerViewAdapter? = null
-    private var recyclerViewAdapter2 : CitiesRecyclerViewAdapter? = null
+    private var selectedCities = arrayListOf<String>()
+    private var allCities = ArrayList<String>()
+    private var temperatureRecyclerViewAdapter : TempeturesRecyclerViewAdapter? = null
+    private var citiesRecyclerViewAdapter : CitiesRecyclerViewAdapter? = null
     private var sharedPreferences : SharedPreferences? = null
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
 
@@ -66,25 +66,25 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMainScreenBinding.inflate(inflater, container, false)
-        context = requireActivity().applicationContext
+        appContext = requireActivity().applicationContext
         return binding.root
     }
 
     @SuppressLint("CommitPrefEdits", "CutPasteId", "ResourceAsColor")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initViews()
-        registerLauncher()
-        lacationPermission()
+        initializeViews()
+        registerPermissionLauncher()
+        requestLocationPermission()
         setupViewPager()
         setupSearchView()
         setupToggle()
         observeLiveData()
     }
 
-    private fun initViews() {
-        mCustomPagerAdapter = ViewPagerAdapter(parentFragmentManager, fragmentTagArg)
-        binding.pager.adapter = mCustomPagerAdapter
+    private fun initializeViews() {
+        pagerAdapter = ViewPagerAdapter(parentFragmentManager, fragmentTagArg)
+        binding.pager.adapter = pagerAdapter
         binding.pager.offscreenPageLimit = 3
         binding.pager.setPageTransformer(true, ZoomOutPageTransformer())
 
@@ -102,7 +102,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
             Context.MODE_PRIVATE
         )
 
-        getSavedPlaces()
+        //getSavedPlaces()
     }
 
     private fun setupViewPager() {
@@ -113,7 +113,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
 
             override fun onPageScrollStateChanged(state: Int) {
                 if (state == ViewPager2.SCROLL_STATE_IDLE) {
-                    mCustomPagerAdapter.notifyDataSetChanged()
+                    pagerAdapter.notifyDataSetChanged()
                 }
             }
         })
@@ -153,16 +153,16 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     private fun observeLiveData() {
         val cityNames = extractCityNames()
 
-        place= cityNames
+        allCities = cityNames
 
-        val adapter = CitiesRecyclerViewAdapter(place)
+        val adapter = CitiesRecyclerViewAdapter(allCities)
         adapter.setListener(this)
         binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.filtered_place_recyclerview).adapter = adapter
 
-        recyclerViewAdapter2 = CitiesRecyclerViewAdapter(place)
-        recyclerViewAdapter2!!.setListener(this)
+        citiesRecyclerViewAdapter = CitiesRecyclerViewAdapter(allCities)
+        citiesRecyclerViewAdapter!!.setListener(this)
 
-        binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.filtered_place_recyclerview).adapter = recyclerViewAdapter2
+        binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.filtered_place_recyclerview).adapter = citiesRecyclerViewAdapter
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -178,10 +178,10 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    override fun onHymnClick(citiesModel: String?) {
+    override fun onItemClick(citiesModel: String?) {
         if (citiesModel != null) {
-            if (mCustomPagerAdapter.count < 10) {
-                if (!arrayList.contains(citiesModel.uppercase())) {
+            if (pagerAdapter.count < 10) {
+                if (!selectedCities.contains(citiesModel.uppercase())) {
                     addCity(citiesModel.uppercase())
                     hideNavDrawer()
                 } else {
@@ -195,16 +195,16 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
 
     private fun addCity(cityName: String) {
 
-        if (arrayList.size>5){
+        if (selectedCities.size>5){
             Toast.makeText(requireContext(),"Çok fazla şehir eklediniz. Lütfen şehir silip tekrar edeneyiniz.",Toast.LENGTH_SHORT).show()
         }
         else{
-            mCustomPagerAdapter.addPage(CityWeatherData.newInstance(cityName))
-            binding.pager.currentItem = mCustomPagerAdapter.count
-            arrayList.add(cityName)
+            pagerAdapter.addPage(CityWeatherData.newInstance(cityName))
+            binding.pager.currentItem = pagerAdapter.count
+            selectedCities.add(cityName)
 
             val gson = Gson()
-            val json = gson.toJson(arrayList)
+            val json = gson.toJson(selectedCities)
             sharedPreferences?.edit()?.putString("TAG", json)?.apply()
 
             updateRecyclerViewAdapter()
@@ -214,10 +214,10 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
     @SuppressLint("NotifyDataSetChanged")
     private fun updateRecyclerViewAdapter() {
         binding.navView.getHeaderView(0).findViewById<SearchView>(R.id.placeName).setQuery("", false)
-        recyclerViewAdapter1 = TempeturesRecyclerViewAdapter(arrayList)
-        recyclerViewAdapter1!!.setListener(this)
-        binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = recyclerViewAdapter1
-        recyclerViewAdapter1!!.notifyDataSetChanged()
+        temperatureRecyclerViewAdapter = TempeturesRecyclerViewAdapter(selectedCities)
+        temperatureRecyclerViewAdapter!!.setListener(this)
+        binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = temperatureRecyclerViewAdapter
+        temperatureRecyclerViewAdapter!!.notifyDataSetChanged()
     }
 
     private fun showSnackbar(message: String) {
@@ -231,18 +231,18 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         val type: Type = object : TypeToken<List<String?>?>() {}.type
 
             if (json1 != "") {
-                arrayList.addAll(gson1.fromJson(json1, type))
-                for (a in arrayList) {
-                    mCustomPagerAdapter.addPage(CityWeatherData.newInstance(a))
-                    binding.pager.currentItem = 0
-                    mCustomPagerAdapter.notifyDataSetChanged()
+                selectedCities.addAll(gson1.fromJson(json1, type))
+                for (a in selectedCities) {
+                    pagerAdapter.addPage(CityWeatherData.newInstance(a))
+                    pagerAdapter.notifyDataSetChanged()
+
                 }
             }
 
-            recyclerViewAdapter1 = TempeturesRecyclerViewAdapter(arrayList)
-            recyclerViewAdapter1!!.setListener(this)
-            binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = recyclerViewAdapter1
-            recyclerViewAdapter1!!.notifyDataSetChanged()
+            temperatureRecyclerViewAdapter = TempeturesRecyclerViewAdapter(selectedCities)
+            temperatureRecyclerViewAdapter!!.setListener(this)
+            binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = temperatureRecyclerViewAdapter
+            temperatureRecyclerViewAdapter!!.notifyDataSetChanged()
 
     }
 
@@ -250,9 +250,9 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         binding.myDrawerLayout.closeDrawer(GravityCompat.START)
     }
 
-    override fun onLongClick(currentPage: Int?) {
+    override fun onLongItemClick(currentPage: Int?) {
         if (currentPage != null) {
-            mCustomPagerAdapter.notifyDataSetChanged()
+            pagerAdapter.notifyDataSetChanged()
 
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
             alertDialogBuilder.setTitle("Şehri sil")
@@ -265,17 +265,17 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
                 val json = sharedPreferences.getString("TAG", "")
                 val type = object : TypeToken<MutableList<String>?>() {}.type
 
-                val arrayList: MutableList<String> = gson.fromJson(json, type) ?: mutableListOf()
+                val selectedCities: MutableList<String> = gson.fromJson(json, type) ?: mutableListOf()
 
-                if (currentPage < arrayList.size) {
-                    arrayList.removeAt(currentPage)
+                if (currentPage < selectedCities.size) {
+                    selectedCities.removeAt(currentPage)
                     val editor = sharedPreferences.edit()
-                    editor.putString("TAG", gson.toJson(arrayList))
+                    editor.putString("TAG", gson.toJson(selectedCities))
                     editor.apply()
                 }
 
-                recyclerViewAdapter1?.removeItem(currentPage)
-                mCustomPagerAdapter.removePage(currentPage)
+                temperatureRecyclerViewAdapter?.removeItem(currentPage)
+                pagerAdapter.removePage(currentPage)
             }
 
             alertDialogBuilder.setNegativeButton("Hayır") { _, _ ->
@@ -288,7 +288,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         }
     }
     private fun extractCityNames(): ArrayList<String> {
-        val assetManager: AssetManager = context.assets
+        val assetManager: AssetManager = appContext.assets
         val inputStream: InputStream = assetManager.open("sehirIsimleri.json")
         val size: Int = inputStream.available()
         val buffer = ByteArray(size)
@@ -310,16 +310,16 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         return cityNames
     }
     private fun filterCityName(filter: String) {
-        val filterers: ArrayList<String> = ArrayList()
-        for (item in place) {
+        val filteredCities: ArrayList<String> = ArrayList()
+        for (item in allCities) {
             if (item.toLowerCase(Locale("tr")).contains(filter.toLowerCase(Locale("tr"))) ||
                 item.replace("İ", "i", ignoreCase = true).contains(filter.replace("İ", "i", ignoreCase = true))
             ) {
-                filterers.add(item)
+                filteredCities.add(item)
             }
         }
-        if (filterers.isNotEmpty()) {
-            recyclerViewAdapter2?.filterList(filterers)
+        if (filteredCities.isNotEmpty()) {
+            citiesRecyclerViewAdapter?.filterCities(filteredCities)
         }
     }
 
@@ -342,7 +342,7 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
         }
     }
 
-    private fun lacationPermission() {
+    private fun requestLocationPermission() {
        if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
 
         if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.ACCESS_FINE_LOCATION)){
@@ -357,24 +357,24 @@ class MainScreen : Fragment() , OnHymnClickListener, onCliclLongRecyclerView {
 
        }
         else{
-           println("İzin var")
+           permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
        }
     }
 
-
-    private fun registerLauncher(){
+    private fun registerPermissionLauncher(){
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){result ->
             if (result){
              if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                  loadCurrentLocation { currentCityName ->
-                     mCustomPagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
-                 }.let {
-                     mCustomPagerAdapter.notifyDataSetChanged()
-                     binding.pager.setCurrentItem(0,false)
+                     pagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
+                     binding.pager.currentItem = 0
+                     pagerAdapter.notifyDataSetChanged()
+                     getSavedPlaces()
                  }
              } }
             else{
                 Toast.makeText(requireContext(),"İzin verilmedi",Toast.LENGTH_SHORT).show()
+                getSavedPlaces()
             }
         }
     }

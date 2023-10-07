@@ -4,18 +4,18 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.kotlinweatherforecast.utils.OnHymnClickListener
 import com.example.kotlinweatherforecast.databinding.CitiesanddistrictsRowLayoutBinding
+import com.example.kotlinweatherforecast.utils.OnItemClickListener
 
 class CitiesRecyclerViewAdapter(private var places:ArrayList<String>) : RecyclerView.Adapter<CitiesRecyclerViewAdapter.RowHolder>() {
-    private var listener: OnHymnClickListener? = null
+    private var listener: OnItemClickListener? = null
     @SuppressLint("NotifyDataSetChanged")
-    fun filterList(filtered:ArrayList<String>) {
+    fun filterCities(filtered:ArrayList<String>) {
         places= filtered
         notifyDataSetChanged()
     }
 
-    fun setListener(listener: OnHymnClickListener){
+    fun setListener(listener: OnItemClickListener){
         this.listener = listener
     }
 
@@ -31,7 +31,7 @@ class CitiesRecyclerViewAdapter(private var places:ArrayList<String>) : Recycler
 
         holder.itemView.setOnClickListener {
             if (listener != null) {
-                listener!!.onHymnClick(places[position])
+                listener!!.onItemClick(places[position])
             }
         }
     }
