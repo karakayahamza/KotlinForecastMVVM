@@ -103,23 +103,24 @@ class ViewPagerAdapter(fragmentManager: FragmentManager, FRAGMENT_TAG_ARG: Strin
         }
     }
 
-    fun removePage(position: Int) {
-        fragmentsPosition.clear()
-        var pageFragment: Fragment = pages[position]
-        var tag = pageFragment.requireArguments().getString(fragmentTagArg)
-        var fragment = fragmentManager!!.findFragmentByTag(tag)
-        if (fragment != null) {
-            fragmentsPosition[fragment] = POSITION_NONE
-        }
-        for (i in position + 1 until pages.size) {
-            pageFragment = pages[i]
-            tag = pageFragment.requireArguments().getString(fragmentTagArg)
-            fragment = fragmentManager!!.findFragmentByTag(tag)
-            if (fragment != null) {
-                fragmentsPosition[fragment] = i - 1
+    fun removePage(matchingTag: String) {
+        val iterator = pages.iterator()
+        while (iterator.hasNext()) {
+            val pageFragment = iterator.next()
+            val tag = pageFragment.arguments?.getString("cityName") // "etiket" yerine kendi etiket alanınızı kullanın
+
+            // Eşleşen etiketi kontrol et
+            if (tag == matchingTag) {
+                val fragment = fragmentManager!!.findFragmentByTag(tag)
+                if (fragment != null) {
+                    fragmentsPosition[fragment] = POSITION_NONE
+                }
+
+                // Sayfayı kaldır
+                iterator.remove()
             }
         }
-        pages.removeAt(position)
+
         notifyDataSetChanged()
     }
 }

@@ -43,4 +43,8 @@ class TempeturesRecyclerViewAdapter(private var placeName: ArrayList<String>) : 
         placeName.removeAt(position)
         notifyDataSetChanged()
     }
+
+    fun getItemName(position: Int):String{
+        return placeName[position]
+    }
 }

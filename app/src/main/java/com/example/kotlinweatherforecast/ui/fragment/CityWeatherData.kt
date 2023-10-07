@@ -22,8 +22,9 @@ class CityWeatherData : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: WeatherViewModel
     private val API_KEY  = BuildConfig.API_KEY
+    private var cityName: String? = null
     companion object {
-        fun newInstance(cityName: String?): CityWeatherData {
+        fun newInstance(cityName: String): CityWeatherData {
             val fragment = CityWeatherData()
             val args = Bundle()
             args.putString("cityName", cityName)
@@ -34,6 +35,7 @@ class CityWeatherData : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        cityName = arguments?.getString("cityName")
     }
 
     override fun onCreateView(

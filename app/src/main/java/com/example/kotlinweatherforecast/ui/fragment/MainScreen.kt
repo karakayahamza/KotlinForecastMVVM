@@ -313,7 +313,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
 
     private fun loadCurrentLocation(){
         receiveCurrentLocation { currentCityName ->
-            pagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
+            pagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName.toString()),0)
             binding.pager.currentItem = 0
             pagerAdapter.notifyDataSetChanged()
             println("2")
@@ -358,9 +358,9 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
                     editor.putString("TAG", gson.toJson(selectedCities))
                     editor.apply()
                 }
-
+                temperatureRecyclerViewAdapter?.let { pagerAdapter.removePage(it.getItemName(currentPage)) }
                 temperatureRecyclerViewAdapter?.removeItem(currentPage)
-                pagerAdapter.removePage(currentPage)
+
             }
 
             alertDialogBuilder.setNegativeButton("Hayır") { _, _ ->
