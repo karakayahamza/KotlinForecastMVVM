@@ -177,21 +177,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
         binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.filtered_place_recyclerview).visibility = View.GONE
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    override fun onItemClick(citiesModel: String?) {
-        if (citiesModel != null) {
-            if (pagerAdapter.count < 10) {
-                if (!selectedCities.contains(citiesModel.uppercase())) {
-                    addCity(citiesModel.uppercase())
-                    hideNavDrawer()
-                } else {
-                    showSnackbar("Bu şehri zaten eklediniz.")
-                }
-            } else {
-                showSnackbar("Çok fazla şehir eklediniz.\n Lütfen şehir silip tekrar deneyiniz.")
-            }
-        }
-    }
+
 
     private fun addCity(cityName: String) {
 
@@ -220,11 +206,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
         temperatureRecyclerViewAdapter!!.notifyDataSetChanged()
     }
 
-    private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root.rootView, message, Snackbar.LENGTH_LONG).show()
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "SuspiciousIndentation")
     private fun laodSavedPlaces() {
         val gson1 = Gson()
         val json1 = sharedPreferences?.getString("TAG", "")
@@ -238,54 +220,13 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
 
                 }
             }
-
             temperatureRecyclerViewAdapter = TempeturesRecyclerViewAdapter(selectedCities)
             temperatureRecyclerViewAdapter!!.setListener(this)
             binding.navView.getHeaderView(0).findViewById<RecyclerView>(R.id.places_recyclerview).adapter = temperatureRecyclerViewAdapter
             temperatureRecyclerViewAdapter!!.notifyDataSetChanged()
-
     }
 
-    private fun hideNavDrawer(){
-        binding.myDrawerLayout.closeDrawer(GravityCompat.START)
-    }
 
-    override fun onLongItemClick(currentPage: Int?) {
-        if (currentPage != null) {
-            pagerAdapter.notifyDataSetChanged()
-
-            val alertDialogBuilder = AlertDialog.Builder(requireContext())
-            alertDialogBuilder.setTitle("Şehri sil")
-            alertDialogBuilder.setMessage("Kayıtlı şehri silmek istediğinizden emin misiniz?")
-
-
-            alertDialogBuilder.setPositiveButton("Evet") { _, _ ->
-                val sharedPreferences = requireActivity().getSharedPreferences("com.example.kotlinforecast.view", Context.MODE_PRIVATE)
-                val gson = Gson()
-                val json = sharedPreferences.getString("TAG", "")
-                val type = object : TypeToken<MutableList<String>?>() {}.type
-
-                val selectedCities: MutableList<String> = gson.fromJson(json, type) ?: mutableListOf()
-
-                if (currentPage < selectedCities.size) {
-                    selectedCities.removeAt(currentPage)
-                    val editor = sharedPreferences.edit()
-                    editor.putString("TAG", gson.toJson(selectedCities))
-                    editor.apply()
-                }
-
-                temperatureRecyclerViewAdapter?.removeItem(currentPage)
-                pagerAdapter.removePage(currentPage)
-            }
-
-            alertDialogBuilder.setNegativeButton("Hayır") { _, _ ->
-
-            }
-
-            val alertDialog = alertDialogBuilder.create()
-            alertDialog.show()
-        }
-    }
     private fun extractCityNames(): ArrayList<String> {
         val assetManager: AssetManager = appContext.assets
         val inputStream: InputStream = assetManager.open("sehirIsimleri.json")
@@ -322,7 +263,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
         }
     }
 
-    private fun loadCurrentLocation(callback: (String?) -> Unit) {
+    private fun receiveCurrentLocation(callback: (String?) -> Unit) {
         val locationHelper = LocationHelper(requireActivity())
         if (ContextCompat.checkSelfPermission(
                 requireActivity(),
@@ -344,7 +285,6 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
     private fun requestLocationPermission() {
        if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
         if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.ACCESS_FINE_LOCATION)){
-
             Snackbar.make(binding.root,"Lokasyon bilgisini almak için izniniz gerekli",Snackbar.LENGTH_INDEFINITE).setAction("İzin ver"){
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }.show()
@@ -354,7 +294,7 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
            }
        }
         else{
-           registerPermissionLauncher()
+           loadCurrentLocation()
         }
     }
 
@@ -362,16 +302,79 @@ class MainScreen : Fragment() , OnItemClickListener, OnCliclLongRecyclerView {
         permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){result ->
             if (result){
              if (ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                 loadCurrentLocation { currentCityName ->
-                     pagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
-                     binding.pager.currentItem = 0
-                     pagerAdapter.notifyDataSetChanged()
-                 }
+                 loadCurrentLocation()
              }
             }
             else{
                 Toast.makeText(requireContext(),"İzin verilmedi",Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun loadCurrentLocation(){
+        receiveCurrentLocation { currentCityName ->
+            pagerAdapter.addPageFirstPlace(CityWeatherData.newInstance(currentCityName),0)
+            binding.pager.currentItem = 0
+            pagerAdapter.notifyDataSetChanged()
+            println("2")
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onItemClick(citiesModel: String?) {
+        if (citiesModel != null) {
+            if (pagerAdapter.count < 10) {
+                if (!selectedCities.contains(citiesModel.uppercase())) {
+                    addCity(citiesModel.uppercase())
+                    hideNavDrawer()
+                } else {
+                    showSnackbar("Bu şehri zaten eklediniz.")
+                }
+            } else {
+                showSnackbar("Çok fazla şehir eklediniz.\n Lütfen şehir silip tekrar deneyiniz.")
+            }
+        }
+    }
+    override fun onLongItemClick(currentPage: Int?) {
+        if (currentPage != null) {
+            pagerAdapter.notifyDataSetChanged()
+
+            val alertDialogBuilder = AlertDialog.Builder(requireContext())
+            alertDialogBuilder.setTitle("Şehri sil")
+            alertDialogBuilder.setMessage("Kayıtlı şehri silmek istediğinizden emin misiniz?")
+
+
+            alertDialogBuilder.setPositiveButton("Evet") { _, _ ->
+                val sharedPreferences = requireActivity().getSharedPreferences("com.example.kotlinforecast.view", Context.MODE_PRIVATE)
+                val gson = Gson()
+                val json = sharedPreferences.getString("TAG", "")
+                val type = object : TypeToken<MutableList<String>?>() {}.type
+
+                val selectedCities: MutableList<String> = gson.fromJson(json, type) ?: mutableListOf()
+
+                if (currentPage < selectedCities.size) {
+                    selectedCities.removeAt(currentPage)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("TAG", gson.toJson(selectedCities))
+                    editor.apply()
+                }
+
+                temperatureRecyclerViewAdapter?.removeItem(currentPage)
+                pagerAdapter.removePage(currentPage)
+            }
+
+            alertDialogBuilder.setNegativeButton("Hayır") { _, _ ->
+
+            }
+
+            val alertDialog = alertDialogBuilder.create()
+            alertDialog.show()
+        }
+    }
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root.rootView, message, Snackbar.LENGTH_LONG).show()
+    }
+    private fun hideNavDrawer(){
+        binding.myDrawerLayout.closeDrawer(GravityCompat.START)
     }
 }

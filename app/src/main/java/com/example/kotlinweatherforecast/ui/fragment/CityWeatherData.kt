@@ -21,16 +21,9 @@ class CityWeatherData : Fragment() {
     private var _binding: FragmentCityWeatherDataBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: WeatherViewModel
-    val API_KEY  = BuildConfig.API_KEY
+    private val API_KEY  = BuildConfig.API_KEY
     companion object {
         fun newInstance(cityName: String?): CityWeatherData {
-            val fragment = CityWeatherData()
-            val args = Bundle()
-            args.putString("cityName", cityName)
-            fragment.arguments = args
-            return fragment
-        }
-        fun newInstance(cityName: String?,isCurrentPlace:Boolean): CityWeatherData {
             val fragment = CityWeatherData()
             val args = Bundle()
             args.putString("cityName", cityName)

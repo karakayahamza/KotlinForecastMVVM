@@ -23,7 +23,6 @@ class InternetConnectivity : Application() {
         this.context = context
     }
 
-
     override fun onCreate() {
         super.onCreate()
 

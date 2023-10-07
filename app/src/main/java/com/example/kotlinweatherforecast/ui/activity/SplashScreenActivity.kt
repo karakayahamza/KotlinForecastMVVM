@@ -20,15 +20,14 @@ class SplashScreenActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        val topAnimation = AnimationUtils.loadAnimation(this, R.anim.top_anim)
+        val topAnimation = AnimationUtils.loadAnimation(this, R.anim.show_up)
 
         binding.imageView.startAnimation(topAnimation)
-        Glide.with(this).load(R.drawable.weathergif).into(binding.imageView)
 
         Handler().postDelayed({
             val intent = Intent(this@SplashScreenActivity, MainActivity::class.java)
             startActivity(intent)
             finish()
-        },4000)
+        },1000)
     }
 }
