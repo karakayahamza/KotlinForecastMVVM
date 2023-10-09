@@ -3,6 +3,7 @@ package com.example.kotlinweatherforecast.data.model
 import com.google.gson.annotations.SerializedName
 
 class WeatherModel(uuid: Int, cod: String, message: Int, cnt: Int, weatherList: List<list>, city: City) {
+    @SerializedName("uuid")
     var uuid = 0
 
     @SerializedName("cod")
