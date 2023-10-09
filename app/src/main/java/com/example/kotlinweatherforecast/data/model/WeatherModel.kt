@@ -1,8 +1,5 @@
 package com.example.kotlinweatherforecast.data.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 class WeatherModel(uuid: Int, cod: String, message: Int, cnt: Int, weatherList: List<list>, city: City) {
