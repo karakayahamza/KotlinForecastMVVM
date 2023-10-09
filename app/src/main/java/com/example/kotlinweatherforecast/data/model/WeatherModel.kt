@@ -15,7 +15,7 @@ class WeatherModel(uuid: Int, cod: String, message: Int, cnt: Int, weatherList: 
     @SerializedName("cnt")
     var cnt: Int
 
-    @ColumnInfo(name = "list")
+    @SerializedName("lsit")
     var weatherList: List<list>
 
     @SerializedName("city")
